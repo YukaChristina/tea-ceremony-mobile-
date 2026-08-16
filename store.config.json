@@ -1,0 +1,16 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "info": {
+      "ja": {
+        "title": "稽古記録",
+        "subtitle": "茶道の稽古を記録する",
+        "description": "茶道の稽古内容（点前、道具、気づき）を記録・振り返りできるアプリです。",
+        "keywords": ["茶道", "稽古記録", "お茶", "茶の湯"],
+        "privacyPolicyUrl": "https://tea-ceremony-front.vercel.app/privacy",
+        "marketingUrl": "https://tea-ceremony-front.vercel.app"
+      }
+    },
+    "copyright": "Yuka Takahashi"
+  }
+}
