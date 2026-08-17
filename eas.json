@@ -12,7 +12,15 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://jafanmmlryqundpbverp.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphZmFubW1scnlxdW5kcGJ2ZXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDA5NTMsImV4cCI6MjA4OTk3Njk1M30.bZSf-9R7lSDMrhrhEysI6WaUD8Xu1y0SOsgrgVfDySg",
+        "EXPO_PUBLIC_API_BASE_URL": "https://tea-ceremony-back.onrender.com",
+        "EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME": "de3pr7epu",
+        "EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET": "eqxpffqi",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_ImmjtbjDIKRrRilpEIbBAWwrAAY"
+      }
     }
   },
   "submit": {

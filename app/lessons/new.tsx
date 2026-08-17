@@ -1,5 +1,12 @@
+import { useCallback, useState } from "react";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
+import { useFocusEffect } from "expo-router";
 import { apiFetch } from "@/lib/api";
 import LessonEditor from "@/components/LessonEditor";
+import Paywall from "@/components/Paywall";
+import { getPremiumStatus } from "@/services/purchaseService";
+
+const FREE_LESSON_LIMIT = 10;
 
 const EMPTY_TABS = {
   chashitsu: { items: [] },
@@ -13,6 +20,24 @@ const EMPTY_LESSON = {
 };
 
 export default function NewLessonScreen() {
+  const [loading, setLoading] = useState(true);
+  const [locked, setLocked] = useState(false);
+
+  const checkAccess = useCallback(() => {
+    setLoading(true);
+    Promise.all([
+      apiFetch("/lessons").then((r) => r.json()),
+      getPremiumStatus(),
+    ])
+      .then(([lessons, isPremium]) => {
+        const count = Array.isArray(lessons) ? lessons.length : 0;
+        setLocked(!isPremium && count >= FREE_LESSON_LIMIT);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  useFocusEffect(checkAccess);
+
   const handleSave = async (payload: { practiced_on: string; practice_name: string }) => {
     const res = await apiFetch("/lessons", {
       method: "POST",
@@ -21,6 +46,18 @@ export default function NewLessonScreen() {
     if (!res.ok) throw new Error(`稽古の作成に失敗しました: ${res.status}`);
     return res.json();
   };
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#4a7c59" />
+      </View>
+    );
+  }
+
+  if (locked) {
+    return <Paywall onUnlock={() => setLocked(false)} />;
+  }
 
   return (
     <LessonEditor
@@ -31,3 +68,12 @@ export default function NewLessonScreen() {
     />
   );
 }
+
+const styles = StyleSheet.create({
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f7f3ea",
+  },
+});

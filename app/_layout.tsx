@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useRouter, useSegments } from "expo-router";
 import { Session } from "@supabase/supabase-js";
 import { FONT_SERIF } from "@/lib/fonts";
+import { configurePurchases } from "@/services/purchaseService";
 
 function AuthGuard({ session }: { session: Session | null | undefined }) {
   const segments = useSegments();
@@ -24,6 +25,10 @@ function AuthGuard({ session }: { session: Session | null | undefined }) {
 
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
+
+  useEffect(() => {
+    configurePurchases();
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {

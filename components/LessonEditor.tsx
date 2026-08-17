@@ -341,10 +341,10 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
       }
 
       // 写真アップロード
-      for (const photo of newPhotoUris) {
-        const fileBlob = await (await fetch(photo.uri)).blob();
+      for (const newPhoto of newPhotoUris) {
+        const fileBlob = await (await fetch(newPhoto.uri)).blob();
         const formData = new FormData();
-        formData.append("file", fileBlob, photo.name);
+        formData.append("file", fileBlob, newPhoto.name);
         formData.append("upload_preset", UPLOAD_PRESET);
         const uploadRes = await fetch(
           `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
@@ -357,8 +357,8 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
           body: JSON.stringify({ url: secure_url }),
         });
         if (!saveRes.ok) throw new Error(`写真の保存に失敗しました: ${saveRes.status}`);
-        const { photo } = await saveRes.json();
-        setExistingPhotos((prev) => [...prev, { id: photo.id, url: photo.url }]);
+        const { photo: savedPhoto } = await saveRes.json();
+        setExistingPhotos((prev) => [...prev, { id: savedPhoto.id, url: savedPhoto.url }]);
       }
       setNewPhotoUris([]);
 
