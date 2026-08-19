@@ -8,7 +8,8 @@
     "userInterfaceStyle": "light",
     "scheme": "teaceremony",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
+      "requireFullScreen": true,
       "bundleIdentifier": "com.yukastudio.teaceremony",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
