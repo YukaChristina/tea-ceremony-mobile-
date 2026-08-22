@@ -20,10 +20,7 @@
         "backgroundColor": "#f7f3ea",
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
-      "package": "com.yukastudio.teaceremony",
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
-      ]
+      "package": "com.yukastudio.teaceremony"
     },
     "web": {
       "bundler": "metro",
@@ -37,7 +34,8 @@
         "expo-image-picker",
         {
           "photosPermission": "稽古の写真を選択するために写真へのアクセスが必要です。",
-          "cameraPermission": "稽古の写真を撮影するためにカメラへのアクセスが必要です。"
+          "cameraPermission": "稽古の写真を撮影するためにカメラへのアクセスが必要です。",
+          "microphonePermission": false
         }
       ],
       "expo-web-browser"
