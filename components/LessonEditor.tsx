@@ -253,7 +253,8 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
   const handleSave = async () => {
     if (!onSave) return;
     if (!practicedOn && !teishuForm.practiceName) {
-      Alert.alert("入力エラー", "稽古日と稽古名を入力してください");
+      setActive("teishu");
+      Alert.alert("入力エラー", "稽古日と、「亭主」タブにある稽古名を入力してください");
       return;
     }
     if (!practicedOn) {
@@ -261,7 +262,8 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
       return;
     }
     if (!teishuForm.practiceName) {
-      Alert.alert("入力エラー", "稽古名を入力してください");
+      setActive("teishu");
+      Alert.alert("入力エラー", "「亭主」タブにある稽古名を入力してください");
       return;
     }
     setSaving(true);
