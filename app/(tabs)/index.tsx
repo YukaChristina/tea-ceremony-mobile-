@@ -1,13 +1,41 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/api";
 import { FONT_SERIF } from "@/lib/fonts";
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [deleting, setDeleting] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "アカウントを削除しますか?",
+      "この操作は取り消せません。稽古の記録・写真など、すべてのデータが完全に削除されます。",
+      [
+        { text: "キャンセル", style: "cancel" },
+        {
+          text: "削除する",
+          style: "destructive",
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              const res = await apiFetch("/me", { method: "DELETE" });
+              if (!res.ok) throw new Error(`削除に失敗しました: ${res.status}`);
+              await supabase.auth.signOut();
+            } catch (e: any) {
+              Alert.alert("エラー", e?.message ?? "削除に失敗しました");
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -52,6 +80,19 @@ export default function HomeScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.logoutButtonText}>ログアウト</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.deleteAccountButton}
+          onPress={handleDeleteAccount}
+          activeOpacity={0.7}
+          disabled={deleting}
+        >
+          {deleting ? (
+            <ActivityIndicator size="small" color="#c0392b" />
+          ) : (
+            <Text style={styles.deleteAccountButtonText}>アカウントを削除</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -139,6 +180,16 @@ const styles = StyleSheet.create({
   logoutButtonText: {
     color: "#8a7560",
     fontSize: 14,
+    letterSpacing: 1,
+    fontFamily: FONT_SERIF,
+  },
+  deleteAccountButton: {
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  deleteAccountButtonText: {
+    color: "#c0392b",
+    fontSize: 12,
     letterSpacing: 1,
     fontFamily: FONT_SERIF,
   },
