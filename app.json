@@ -18,7 +18,8 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#f7f3ea",
-        "foregroundImage": "./assets/android-icon-foreground.png"
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "package": "com.yukastudio.teaceremony"
     },

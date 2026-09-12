@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import Purchases, { LOG_LEVEL, type PurchasesPackage } from "react-native-purchases";
 
 // RevenueCatダッシュボードで作成するEntitlementのID。
@@ -6,9 +7,14 @@ const PREMIUM_ENTITLEMENT_ID = "premium";
 let isConfigured = false;
 
 export function configurePurchases(): void {
-  const apiKey = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+  const apiKey = Platform.select({
+    ios: process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY,
+    android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY,
+  });
   if (!apiKey) {
-    console.warn("EXPO_PUBLIC_REVENUECAT_IOS_KEY が未設定のため、課金機能は無効化されます。");
+    console.warn(
+      `EXPO_PUBLIC_REVENUECAT_${Platform.OS === "ios" ? "IOS" : "ANDROID"}_KEY が未設定のため、課金機能は無効化されます。`
+    );
     return;
   }
 
