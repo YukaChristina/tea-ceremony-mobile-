@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { apiFetch } from "@/lib/api";
 import { FONT_SERIF } from "@/lib/fonts";
 
@@ -205,6 +205,31 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const editable = mode === "new" || mode === "edit";
+  const navigation = useNavigation();
+  const justSavedRef = useRef(false);
+
+  // 入力中に戻る操作（Androidの戻るボタン／iOSのスワイプ・戻るボタン共通）をした場合、
+  // 保存直後の遷移でなければ確認ダイアログを出して誤操作による入力破棄を防ぐ。
+  useEffect(() => {
+    if (!editable) return;
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      if (justSavedRef.current) return;
+      e.preventDefault();
+      Alert.alert(
+        "入力内容を破棄しますか?",
+        "このまま戻ると、入力した内容は保存されません。",
+        [
+          { text: "キャンセル", style: "cancel" },
+          {
+            text: "破棄する",
+            style: "destructive",
+            onPress: () => navigation.dispatch(e.data.action),
+          },
+        ]
+      );
+    });
+    return unsubscribe;
+  }, [navigation, editable]);
 
   const rf = active === "teishu" ? teishuForm : kyakuForm;
   const setRf = active === "teishu" ? setTeishuForm : setKyakuForm;
@@ -369,6 +394,7 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
           text: "OK",
           onPress: () => {
             if (mode === "new") {
+              justSavedRef.current = true;
               router.replace(`/lessons/${lesson_id}/edit`);
             }
           },
