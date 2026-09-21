@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Linking } from "react-native";
 import { useRouter } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/api";
@@ -80,6 +80,14 @@ export default function HomeScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.logoutButtonText}>ログアウト</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={() => Linking.openURL("https://tea-ceremony-front.vercel.app/privacy")}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.logoutButtonText}>プライバシーポリシー</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
