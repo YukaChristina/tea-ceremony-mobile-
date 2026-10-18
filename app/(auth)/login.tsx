@@ -2,12 +2,9 @@ import { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
-  KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   Alert,
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
@@ -19,20 +16,7 @@ import { FONT_SERIF } from "@/lib/fonts";
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("エラー", "メールアドレスとパスワードを入力してください");
-      return;
-    }
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) Alert.alert("ログイン失敗", error.message);
-  };
 
   const handleAppleLogin = async () => {
     setLoading(true);
@@ -107,10 +91,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <View style={styles.container}>
       <View style={styles.inner}>
         <View style={styles.decorLine}>
           <View style={styles.line} />
@@ -122,44 +103,6 @@ export default function LoginScreen() {
         <Text style={styles.subtitle}>Sado Practice Log</Text>
 
         <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="メールアドレス"
-            placeholderTextColor="#8a7560"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="パスワード"
-            placeholderTextColor="#8a7560"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}
-            activeOpacity={0.7}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>ログイン</Text>
-            )}
-          </TouchableOpacity>
-
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>または</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
           {Platform.OS === "ios" && (
             <AppleAuthentication.AppleAuthenticationButton
               buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
@@ -182,7 +125,7 @@ export default function LoginScreen() {
 
         <Text style={styles.diamond}>◇</Text>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -234,49 +177,8 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 12,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#d6c9b0",
-    borderRadius: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: "#2c2416",
-    backgroundColor: "#fdfaf3",
-    fontFamily: FONT_SERIF,
-  },
-  button: {
-    backgroundColor: "#4a7c59",
-    borderRadius: 4,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginTop: 8,
-  },
   buttonDisabled: {
     opacity: 0.6,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    letterSpacing: 2,
-    fontWeight: "500",
-    fontFamily: FONT_SERIF,
-  },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginVertical: 4,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#d6c9b0",
-  },
-  dividerText: {
-    fontSize: 12,
-    color: "#8a7560",
-    fontFamily: FONT_SERIF,
   },
   appleButton: {
     width: "100%",
