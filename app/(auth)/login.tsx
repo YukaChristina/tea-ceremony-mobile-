@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,15 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
+
+  // Android: Chromeカスタムタブの起動準備を事前に済ませておかないと、
+  // 初回のGoogleログインで接続が間に合わず失敗することがあるため。
+  useEffect(() => {
+    WebBrowser.warmUpAsync();
+    return () => {
+      WebBrowser.coolDownAsync();
+    };
+  }, []);
 
   const handleAppleLogin = async () => {
     setLoading(true);

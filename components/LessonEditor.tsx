@@ -155,12 +155,20 @@ const ITEM_TYPE_LABELS: Record<string, string> = {
   chaki: "茶器",
   shifuku: "仕覆",
   okashi: "お菓子",
-  kakejiku: "掛け軸",
+  kakejiku: "掛軸",
   hana: "花",
 };
 
 function itemTypeLabel(itemType: string): string {
   return ITEM_TYPE_LABELS[itemType] ?? itemType;
+}
+
+const CHASHITSU_ITEM_ORDER: Record<string, number> = { kakejiku: 0, hana: 1, okashi: 2 };
+
+function sortChashitsuItems(items: LessonItem[]): LessonItem[] {
+  return [...items].sort(
+    (a, b) => (CHASHITSU_ITEM_ORDER[a.item_type] ?? 99) - (CHASHITSU_ITEM_ORDER[b.item_type] ?? 99)
+  );
 }
 
 // 保存形式は "茶の種類/棚の状態/稽古名"（例: "薄茶/なし/貴人点て"）。
@@ -207,13 +215,14 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
   const editable = mode === "new" || mode === "edit";
   const navigation = useNavigation();
   const justSavedRef = useRef(false);
+  const headerBackConfirmedRef = useRef(false);
 
   // 入力中に戻る操作（Androidの戻るボタン／iOSのスワイプ・戻るボタン共通）をした場合、
   // 保存直後の遷移でなければ確認ダイアログを出して誤操作による入力破棄を防ぐ。
   useEffect(() => {
     if (!editable) return;
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
-      if (justSavedRef.current) return;
+      if (justSavedRef.current || headerBackConfirmedRef.current) return;
       e.preventDefault();
       Alert.alert(
         "入力内容を破棄しますか?",
@@ -229,6 +238,44 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
       );
     });
     return unsubscribe;
+  }, [navigation, editable]);
+
+  // iOSのヘッダー「戻る」ボタンはネイティブのpopアニメーションが先に走ってしまい、
+  // beforeRemoveのpreventDefaultが間に合わず確認前に戻ってしまうことがあるため、
+  // 自前のボタンに差し替えて確認→goBackの順序を保証する。
+  useEffect(() => {
+    if (!editable || Platform.OS !== "ios") return;
+    navigation.setOptions({
+      headerLeft: () => (
+        <TouchableOpacity
+          onPress={() => {
+            if (justSavedRef.current) {
+              navigation.goBack();
+              return;
+            }
+            Alert.alert(
+              "入力内容を破棄しますか?",
+              "このまま戻ると、入力した内容は保存されません。",
+              [
+                { text: "キャンセル", style: "cancel" },
+                {
+                  text: "破棄する",
+                  style: "destructive",
+                  onPress: () => {
+                    headerBackConfirmedRef.current = true;
+                    navigation.goBack();
+                  },
+                },
+              ]
+            );
+          }}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          style={{ paddingLeft: 8, paddingRight: 16 }}
+        >
+          <Text style={{ fontSize: 17, color: "#4a7c59" }}>{"‹ 戻る"}</Text>
+        </TouchableOpacity>
+      ),
+    });
   }, [navigation, editable]);
 
   const rf = active === "teishu" ? teishuForm : kyakuForm;
@@ -322,12 +369,12 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
       }
 
       // 茶室
-      if (has(okashiGosho, okashiMei))
-        await postItem({ section: "chashitsu", item_type: "okashi", title: okashiGosho || null, mei: okashiMei || null });
       if (kakejiku.trim())
         await postItem({ section: "chashitsu", item_type: "kakejiku", note: kakejiku });
       if (hana.trim())
         await postItem({ section: "chashitsu", item_type: "hana", note: hana });
+      if (has(okashiGosho, okashiMei))
+        await postItem({ section: "chashitsu", item_type: "okashi", title: okashiGosho || null, mei: okashiMei || null });
       for (const item of extraItems)
         if (item.text.trim())
           await postItem({ section: "chashitsu", item_type: item.name, note: item.text });
@@ -663,7 +710,7 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
               {(tabs.chashitsu.items ?? []).length === 0 ? (
                 <Text style={styles.emptyText}>記録がありません</Text>
               ) : (
-                (tabs.chashitsu.items ?? []).map((it) => (
+                sortChashitsuItems(tabs.chashitsu.items ?? []).map((it) => (
                   <View key={it.item_id} style={styles.readCard}>
                     <Text style={styles.readCardTitle}>{itemTypeLabel(it.item_type)}</Text>
                     {it.title && (
@@ -690,8 +737,16 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
             </>
           ) : (
             <>
+              {/* 掛軸 */}
+              <Text style={styles.groupLabel}>掛軸</Text>
+              <TextInput style={styles.textarea} placeholder="掛軸について記入" placeholderTextColor="#8a7560" value={kakejiku} onChangeText={setKakejiku} multiline numberOfLines={3} />
+
+              {/* 花 */}
+              <Text style={[styles.groupLabel, { marginTop: 14 }]}>花</Text>
+              <TextInput style={styles.textarea} placeholder="花について記入" placeholderTextColor="#8a7560" value={hana} onChangeText={setHana} multiline numberOfLines={3} />
+
               {/* お菓子 */}
-              <Text style={styles.groupLabel}>お菓子</Text>
+              <Text style={[styles.groupLabel, { marginTop: 14 }]}>お菓子</Text>
               <View style={styles.inputRow}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.label}>御生</Text>
@@ -702,14 +757,6 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
                   <TextInput style={styles.input} placeholder="銘" placeholderTextColor="#8a7560" value={okashiMei} onChangeText={setOkashiMei} />
                 </View>
               </View>
-
-              {/* 掛け軸 */}
-              <Text style={[styles.groupLabel, { marginTop: 14 }]}>掛け軸</Text>
-              <TextInput style={styles.textarea} placeholder="掛け軸について記入" placeholderTextColor="#8a7560" value={kakejiku} onChangeText={setKakejiku} multiline numberOfLines={3} />
-
-              {/* 花 */}
-              <Text style={[styles.groupLabel, { marginTop: 14 }]}>花</Text>
-              <TextInput style={styles.textarea} placeholder="花について記入" placeholderTextColor="#8a7560" value={hana} onChangeText={setHana} multiline numberOfLines={3} />
 
               {/* 追加項目 */}
               {extraItems.map((item, i) => (
