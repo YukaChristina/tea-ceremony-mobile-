@@ -440,8 +440,8 @@ export default function LessonEditor({ mode, lesson, tabs, initialPhotos, onSave
         {
           text: "OK",
           onPress: () => {
+            justSavedRef.current = true;
             if (mode === "new") {
-              justSavedRef.current = true;
               router.replace(`/lessons/${lesson_id}/edit`);
             }
           },
